@@ -1,5 +1,6 @@
+import asyncio
 from datetime import datetime, timezone
-from configs.configdb import Base
+from configs.configdb import Base, async_engine
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Integer, String, DateTime, ForeignKey, Enum as SQLEnum
 from enum import Enum

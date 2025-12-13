@@ -1,5 +1,17 @@
+import asyncio
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
-import uvicorn
+
+from routes.auth import router as auth_router
+from database.models import Base
+from configs.configdb import async_engine
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    await async_engine.dispose()
 
 app = FastAPI(
     title='TamagoAPI',
@@ -11,5 +23,4 @@ app = FastAPI(
     }
 )
 
-if __name__ == '__main__':
-    uvicorn.run(f'{__name__}:app', port=8000, reload=True)
+app.include_router(auth_router)

@@ -54,7 +54,7 @@ class PetResponse(BaseModel):
     )
 
     class Config:
-        from_attributes = True  
+        orm_mode = True 
 
 class PetUpdate(BaseModel):
     name: Optional[str] = Field(
@@ -66,4 +66,4 @@ class PetUpdate(BaseModel):
     )
 
     class Config:
-        from_attributes = True
+        orm_mode = True

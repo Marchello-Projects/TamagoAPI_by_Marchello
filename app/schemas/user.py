@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List
 from pydantic import BaseModel, Field
 
-from app.schemas.pet import PetResponse  
+from schemas.pet import PetResponse  
 
 class UserCreate(BaseModel):
     username: str = Field(
@@ -42,4 +42,4 @@ class UserResponse(BaseModel):
     )
 
     class Config:
-        from_attributes = True  
+        orm_mode = True  
