@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
-from schemas.pet import PetResponse, PetCreate, PetUpdate
+from datetime import datetime, timezone
+from schemas.pet import PetResponse, PetCreate, PetUpdate, PetAction
 from configs.configdb import get_db
 from routes.auth import get_current_user
 from database.models import Pet, User
@@ -14,6 +15,35 @@ def check_not_pet(pet):
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Pet not found or access denied'
         )
+    
+async def get_pet_from_db(db, pet_id: int, user_id: int):
+    get_pet = await db.execute(
+        select(Pet).where(
+            Pet.id == pet_id,
+            Pet.owner_id == user_id
+        )
+    )
+    
+    data = get_pet.scalar_one_or_none()
+
+    return data
+
+async def changing_pet_stats(pet, db, type_stats: str):
+    check_not_pet(pet)
+
+    if type_stats not in ['hunger', 'energy', 'happiness']:
+        raise ValueError('Invalid stat type')
+
+    current_value = getattr(pet, type_stats)
+    setattr(pet, type_stats, min(current_value + 30, 100))
+
+    pet.last_updated = datetime.now(timezone.utc)
+
+    await db.commit()
+    await db.refresh(pet)
+
+    return pet
+
 
 @router.post('/create', response_model=PetResponse, status_code=status.HTTP_201_CREATED)
 async def create_pet(
@@ -29,6 +59,7 @@ async def create_pet(
     )
     
     existing_pet = get_pet.scalar_one_or_none()
+
     if existing_pet:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -52,14 +83,7 @@ async def get_pet(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    result = await db.execute(
-        select(Pet).where(
-            Pet.id == pet_id,
-            Pet.owner_id == current_user.id
-        )
-    )
-
-    pet = result.scalar_one_or_none()
+    pet = await get_pet_from_db(db, pet_id, current_user.id)
 
     check_not_pet(pet)
 
@@ -72,14 +96,7 @@ async def update_pet(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    get_pet = await db.execute(
-        select(Pet).where(
-            Pet.id == pet_id,
-            Pet.owner_id == current_user.id
-        )
-    )
-
-    pet = get_pet.scalar_one_or_none()
+    pet = await get_pet_from_db(db, pet_id, current_user.id)
 
     check_not_pet(pet)
 
@@ -97,14 +114,7 @@ async def delete_pet(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    get_pet = await db.execute(
-        select(Pet).where(
-            Pet.id == pet_id, 
-            Pet.owner_id == current_user.id
-        )
-    )
-    
-    pet = get_pet.scalar_one_or_none()
+    pet = await get_pet_from_db(db, pet_id, current_user.id)
 
     check_not_pet(pet)
     
@@ -115,3 +125,14 @@ async def delete_pet(
     await db.commit()
 
     return None
+
+@router.patch('/{pet_id}/action', response_model=PetResponse)
+async def action_pet(
+    pet_id: int,
+    action: PetAction,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    pet = await get_pet_from_db(db, pet_id, current_user.id)
+    check_not_pet(pet)
+    return await changing_pet_stats(pet, db, action.type_stats)

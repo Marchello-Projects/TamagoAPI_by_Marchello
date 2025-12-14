@@ -61,3 +61,10 @@ class PetUpdate(BaseModel):
 
     class Config:
         orm_mode = True
+
+class PetAction(BaseModel):
+    type_stats: str = Field(
+        ...,
+        description="Type of stat to increase",
+        example="hunger"  
+    )
