@@ -5,6 +5,7 @@ from routes.auth import router as auth_router
 from routes.pets import router as pets_router
 from database.models import Base
 from configs.configdb import async_engine
+from middleware.pet_decay import PetDecayMiddleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -23,5 +24,6 @@ app = FastAPI(
     }
 )
 
+app.add_middleware(PetDecayMiddleware)
 app.include_router(auth_router)
 app.include_router(pets_router)

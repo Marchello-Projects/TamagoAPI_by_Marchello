@@ -6,12 +6,13 @@ from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from configs.configdb import get_db
 from database.models import User
 from schemas.user import UserCreate, UserResponse
+from database.models import Pet
 
 load_dotenv()
 
@@ -157,10 +158,33 @@ async def login(
     }
 
 @router.get('/me')
-async def read_me(current_user: User = Depends(get_current_user)):
+async def get_my_account(current_user: User = Depends(get_current_user)):
     return {
         'id': current_user.id,
         'username': current_user.username,
         'created_at': current_user.created_at,
         'pets': current_user.pets
     }
+
+@router.delete('/me', status_code=status.HTTP_204_NO_CONTENT)
+async def delete_my_account(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    get_pets = await db.execute(
+        select(Pet).where(Pet.owner_id == current_user.id)
+    )
+
+    pets = get_pets.scalars().all()
+
+    for pet in pets:
+        await db.delete(pet)
+
+    await db.delete(current_user)
+    await db.commit()
+
+    await db.execute(text("ALTER SEQUENCE users_id_seq RESTART WITH 1"))
+    await db.execute(text("ALTER SEQUENCE pets_id_seq RESTART WITH 1"))
+    await db.commit()
+
+    return None
