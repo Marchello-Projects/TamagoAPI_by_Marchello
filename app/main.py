@@ -1,11 +1,12 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
 
+from configs.configdb import async_engine
+from database.models import Base
+from fastapi import FastAPI
+from middleware.pet_decay import PetDecayMiddleware
 from routes.auth import router as auth_router
 from routes.pets import router as pets_router
-from database.models import Base
-from configs.configdb import async_engine
-from middleware.pet_decay import PetDecayMiddleware
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -14,14 +15,15 @@ async def lifespan(app: FastAPI):
     yield
     await async_engine.dispose()
 
+
 app = FastAPI(
-    title='TamagoAPI',
-    description='Tamagotchi API - A fun API to manage virtual pets. Users can create pets, check their state (hunger, happiness, energy), and interact with them by feeding, playing, or putting them to sleep. JWT authentication secures user actions.',
+    title="TamagoAPI",
+    description="Tamagotchi API - A fun API to manage virtual pets. Users can create pets, check their state (hunger, happiness, energy), and interact with them by feeding, playing, or putting them to sleep. JWT authentication secures user actions.",
     contact={
         "name": "Marchello",
         "url": "https://github.com/Marchello-Projects",
         "email": "paskalovmarkus@gmail.com",
-    }
+    },
 )
 
 app.add_middleware(PetDecayMiddleware)

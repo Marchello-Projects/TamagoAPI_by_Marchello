@@ -1,10 +1,11 @@
 import asyncio
+import os
+
+import dotenv
+from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
-from alembic import context
-import os
-import dotenv
 
 dotenv.load_dotenv()
 
@@ -13,11 +14,14 @@ DB_USER = os.getenv("DB_USER", "postgres")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 from configs.configdb import Base
-from database.models import User, Pet, PetActions
+from database.models import Pet, PetActions, User
 
 target_metadata = Base.metadata
 
-DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@localhost:5432/{DATABASE_NAME}"
+DATABASE_URL = (
+    f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@localhost:5432/{DATABASE_NAME}"
+)
+
 
 def run_migrations_offline() -> None:
     context.configure(
@@ -38,10 +42,7 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_async_migrations() -> None:
-    connectable = create_async_engine(
-        DATABASE_URL,
-        poolclass=pool.NullPool
-    )
+    connectable = create_async_engine(DATABASE_URL, poolclass=pool.NullPool)
 
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)

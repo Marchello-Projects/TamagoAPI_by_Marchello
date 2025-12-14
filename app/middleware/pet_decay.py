@@ -1,9 +1,11 @@
-from fastapi import Request
-from starlette.middleware.base import BaseHTTPMiddleware
-from sqlalchemy import select
 from datetime import datetime, timezone
-from database.models import Pet
+
 from configs.configdb import async_session
+from database.models import Pet
+from fastapi import Request
+from sqlalchemy import select
+from starlette.middleware.base import BaseHTTPMiddleware
+
 
 class PetDecayMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -19,8 +21,8 @@ class PetDecayMiddleware(BaseHTTPMiddleware):
                     continue
 
                 elapsed_minutes = elapsed_seconds / 60
-                decay_per_minute = 0.5  
-                max_decay = 50  
+                decay_per_minute = 0.5
+                max_decay = 50
 
                 decay = min(decay_per_minute * elapsed_minutes, max_decay)
 
