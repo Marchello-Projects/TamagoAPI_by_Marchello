@@ -87,3 +87,11 @@ Next, click **Authorize** and enter your login credentials (username and passwor
 | DELETE | /pets/{pet_id} | Permanently removes the pet identified by {pet_id} from the system |
 | PATCH  | /pets/{pet_id}/action | Executes a specific action on the pet (e.g., feeding, grooming, playing) defined in the request body |
 | GET    | /pets/{pet_id}/actions_history | Retrieves a chronological list of all actions previously performed on the pet identified by {pet_id} |
+
+## Tests:
+
+To run the tests, execute this command from the project root directory (**NOT** from `/app` and **NOT** from `/tests`)
+
+```bash
+pytest -v
+```
