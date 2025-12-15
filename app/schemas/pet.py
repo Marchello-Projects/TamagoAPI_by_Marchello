@@ -1,8 +1,9 @@
 from datetime import datetime
 from typing import Optional
 
-from database.models import ActionType
 from pydantic import BaseModel, Field
+
+from database.models import ActionType
 
 
 class PetCreate(BaseModel):

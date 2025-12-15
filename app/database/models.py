@@ -1,11 +1,12 @@
 from datetime import datetime, timezone
 from enum import Enum
 
-from configs.configdb import Base
 from sqlalchemy import DateTime
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from configs.configdb import Base
 
 
 class ActionType(str, Enum):

@@ -1,8 +1,9 @@
 from contextlib import asynccontextmanager
 
+from fastapi import FastAPI
+
 from configs.configdb import async_engine
 from database.models import Base
-from fastapi import FastAPI
 from middleware.pet_decay import PetDecayMiddleware
 from routes.auth import router as auth_router
 from routes.pets import router as pets_router

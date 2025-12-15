@@ -1,10 +1,11 @@
 from datetime import datetime, timezone
 
-from configs.configdb import async_session
-from database.models import Pet
 from fastapi import Request
 from sqlalchemy import select
 from starlette.middleware.base import BaseHTTPMiddleware
+
+from configs.configdb import async_session
+from database.models import Pet
 
 
 class PetDecayMiddleware(BaseHTTPMiddleware):
@@ -16,7 +17,12 @@ class PetDecayMiddleware(BaseHTTPMiddleware):
             now = datetime.now(timezone.utc)
 
             for pet in pets:
-                elapsed_seconds = (now - pet.last_updated).total_seconds()
+                last_updated = pet.last_updated
+
+                if last_updated.tzinfo is None:
+                    last_updated = last_updated.replace(tzinfo=timezone.utc)
+
+                elapsed_seconds = (now - last_updated).total_seconds()
                 if elapsed_seconds <= 0:
                     continue
 
@@ -26,9 +32,9 @@ class PetDecayMiddleware(BaseHTTPMiddleware):
 
                 decay = min(decay_per_minute * elapsed_minutes, max_decay)
 
-                pet.hunger = max(pet.hunger - decay, 0)
-                pet.energy = max(pet.energy - decay, 0)
-                pet.happiness = max(pet.happiness - decay, 0)
+                pet.hunger = int(max(pet.hunger - decay, 0))
+                pet.energy = int(max(pet.energy - decay, 0))
+                pet.happiness = int(max(pet.happiness - decay, 0))
 
                 pet.last_updated = now
                 db.add(pet)

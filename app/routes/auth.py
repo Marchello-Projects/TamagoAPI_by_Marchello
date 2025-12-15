@@ -3,16 +3,17 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import bcrypt
-from configs.configdb import get_db
-from database.models import User
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from schemas.user import UserCreate, UserResponse
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+
+from configs.configdb import get_db
+from database.models import User
+from schemas.user import UserCreate, UserResponse
 
 load_dotenv()
 

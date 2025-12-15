@@ -1,13 +1,14 @@
 from datetime import datetime, timezone
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select, text
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from configs.configdb import get_db
 from database.models import ActionType, Pet, PetActions, User
-from fastapi import APIRouter, Depends, HTTPException, status
 from routes.auth import get_current_user
 from schemas.pet import (PetActionCreate, PetActionResponse, PetCreate,
                          PetResponse, PetUpdate)
-from sqlalchemy import select, text
-from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/pets", tags=["Pets & Actions"])
 
@@ -151,7 +152,7 @@ async def action_pet(
     return await changing_pet_stats(pet, db, action.type_stats)
 
 
-@router.get("/pets/{pet_id}/actions_history", response_model=list[PetActionResponse])
+@router.get("/{pet_id}/actions_history", response_model=list[PetActionResponse])
 async def get_actions_history(
     pet_id: int,
     db: AsyncSession = Depends(get_db),
