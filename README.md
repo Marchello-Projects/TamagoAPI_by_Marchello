@@ -31,7 +31,8 @@ git clone https://github.com/Marchello-Projects/TamagoAPI_by_Marchello
 
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+source .venv/bin/activate  
+# On Windows: .venv\Scripts\activate
 ```
 
 ### 3. Install dependencies
